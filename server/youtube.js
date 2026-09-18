@@ -1,5 +1,15 @@
 import { fetchTranscript } from "youtube-transcript";
 
+const BROWSER_USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36";
+
+function youtubeFetch(input, init = {}) {
+  const headers = new Headers(init.headers);
+  headers.set("User-Agent", BROWSER_USER_AGENT);
+  headers.set("Accept-Language", "en-US,en;q=0.9");
+  return fetch(input, { ...init, headers });
+}
+
 export function extractVideoId(input) {
   const value = String(input || "").trim();
   if (!value) return null;
@@ -31,7 +41,10 @@ export function extractVideoId(input) {
 export async function getTranscript(rawUrl, lang, translateTo) {
   const videoId = extractVideoId(rawUrl);
   if (!videoId) throw new Error("Please paste a valid YouTube video link.");
-  const items = await fetchTranscript(videoId, lang ? { lang } : undefined);
+  const items = await fetchTranscript(videoId, {
+    ...(lang ? { lang } : {}),
+    fetch: youtubeFetch,
+  });
   if (!items.length) throw new Error("This video does not have a transcript.");
   return {
     videoId,
