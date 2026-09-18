@@ -52,6 +52,31 @@ function toParagraphs(lines) {
   return paragraphs;
 }
 
+function parseJsonObject(value) {
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < value.length; i += 1) {
+    const character = value[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (character === "\\") escaped = true;
+      else if (character === '"') inString = false;
+      continue;
+    }
+    if (character === '"') {
+      inString = true;
+    } else if (character === "{") {
+      depth += 1;
+    } else if (character === "}" && --depth === 0) {
+      return JSON.parse(value.slice(0, i + 1));
+    }
+  }
+
+  throw new Error("YouTube se video ki jaankari nahi mili.");
+}
+
 async function fetchPlayer(videoId) {
   const res = await fetch(PLAYER_URL, {
     method: "POST",
@@ -93,7 +118,7 @@ async function fetchWatchPage(videoId) {
     throw new Error("YouTube se video ki jaankari nahi mili.");
   }
 
-  return JSON.parse(html.slice(start + marker.length, end));
+  return parseJsonObject(html.slice(start + marker.length, end));
 }
 
 export async function getTranscript(rawUrl, lang, translateTo) {
