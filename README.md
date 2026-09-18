@@ -1,52 +1,64 @@
-# YouTube Transcript Generator (React.js + Tailwind CSS)
+# YouTube Transcript Generator
 
-Sirf **React.js (JSX)** aur **Tailwind CSS** — koi TypeScript nahi.
+A local React and Express app that fetches YouTube captions through the `youtube-transcript` package. The backend runs on port `5174`; Vite serves the frontend on port `5173`.
 
-## Chalane ka tarika
+## Run locally
+
+Requirements: Node.js 18 or newer.
 
 ```sh
 npm install
 npm run dev
 ```
 
-Phir browser me kholo: http://localhost:5173
+Open [http://localhost:5173](http://localhost:5173).
 
-`npm run dev` do cheezein saath me chalata hai:
+`npm run dev` starts both services with `concurrently`:
 
-- **Client** (Vite + React) — port 5173
-- **Server** (Express) — port 5174, transcript laata hai
+- Frontend: Vite + React at `http://localhost:5173`
+- Backend: Express API at `http://localhost:5174`
 
-## Chhota server kyun chahiye?
+## API
 
-Browser se seedha YouTube ko call karne par CORS block kar deta hai.
-Isliye ek chhota Node/Express server transcript laata hai aur React app
-usse `/api/transcript` par maangta hai.
+`POST http://localhost:5174/api/transcript`
+
+```json
+{
+  "url": "https://www.youtube.com/watch?v=VIDEO_ID"
+}
+```
+
+The response contains the extracted video ID, the transcript `items` array, and joined `text`:
+
+```json
+{
+  "videoId": "VIDEO_ID",
+  "items": [
+    { "text": "Transcript segment", "duration": 2.5, "offset": 0 }
+  ],
+  "text": "Transcript segment ..."
+}
+```
 
 ## Features
 
-- YouTube link (normal, Shorts, youtu.be, embed) se full transcript
-- Ek click me poora transcript **Copy**
-- **Translate** — kisi bhi language me (YouTube ke apne translation se)
-- Video preview — click karo to video wahi play hota hai
-- **Back to Top** button
-- Poore reusable components
+- Supports standard YouTube, Shorts, `youtu.be`, embed, and live URLs
+- Local Express backend avoids browser CORS restrictions
+- Loading and invalid URL or unavailable transcript errors
+- Timestamped, scrollable transcript display
+- Copy transcript to clipboard
+- Download transcript as a `.txt` file
 
 ## Structure
 
-```
+```text
 index.html
 vite.config.js
 server/
-  index.js        Express API (POST /api/transcript)
-  youtube.js      transcript fetch + parse logic
+  index.js        Express API
+  youtube.js      Video ID validation and package adapter
 src/
   main.jsx
   App.jsx
-  index.css       Tailwind theme tokens
-  components/
-    ActionButton.jsx
-    UrlSearchBar.jsx
-    VideoMeta.jsx
-    VideoPreview.jsx
-    TranscriptCard.jsx
+  index.css
 ```

@@ -8,11 +8,13 @@ app.use(express.json());
 
 app.post("/api/transcript", async (req, res) => {
   try {
-    const { url, lang, translateTo } = req.body || {};
-    const result = await getTranscript(url, lang, translateTo);
+    const { url, lang } = req.body || {};
+    const result = await getTranscript(url, lang);
     res.json(result);
   } catch (err) {
-    res.status(400).json({ error: err.message || "Kuch galat ho gaya." });
+    res.status(400).json({
+      error: err.message || "Unable to fetch the transcript.",
+    });
   }
 });
 
