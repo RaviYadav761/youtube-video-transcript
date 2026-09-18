@@ -1,6 +1,6 @@
 # YouTube Transcript Generator
 
-A local React and Express app that fetches YouTube captions through the `youtube-transcript` package. The backend runs on port `5174`; Vite serves the frontend on port `5173`.
+A React and Express app that fetches YouTube captions through the `youtube-transcript` package. It runs locally on ports `5173` and `5174`, and also exposes the same `/api/transcript` handler as a Vercel serverless function.
 
 ## Run locally
 

@@ -46,6 +46,12 @@ export default function App() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ url: url.trim() }),
       });
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error(
+          "The API endpoint is not available. Redeploy the latest version and try again.",
+        );
+      }
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Transcript fetch nahi ho paaya.");
       setResult(data);
