@@ -76,16 +76,44 @@ async function fetchPlayer(videoId) {
   return await res.json();
 }
 
+async function fetchWatchPage(videoId) {
+  const res = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
+    headers: {
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36",
+    },
+  });
+  if (!res.ok) throw new Error("YouTube se video ki jaankari nahi mili.");
+
+  const html = await res.text();
+  const marker = "var ytInitialPlayerResponse = ";
+  const start = html.indexOf(marker);
+  const end = html.indexOf(";</script>", start);
+  if (start === -1 || end === -1) {
+    throw new Error("YouTube se video ki jaankari nahi mili.");
+  }
+
+  return JSON.parse(html.slice(start + marker.length, end));
+}
+
 export async function getTranscript(rawUrl, lang, translateTo) {
   const videoId = extractVideoId(rawUrl);
   if (!videoId) throw new Error("Please paste a valid YouTube video link.");
 
-  const data = await fetchPlayer(videoId);
+  let data;
+  try {
+    data = await fetchPlayer(videoId);
+  } catch {
+    data = await fetchWatchPage(videoId);
+  }
   const status = data?.playabilityStatus?.status;
   if (status && status !== "OK") {
-    throw new Error(
-      data?.playabilityStatus?.reason || "This video cannot be accessed.",
-    );
+    data = await fetchWatchPage(videoId);
+    if (data?.playabilityStatus?.status && data.playabilityStatus.status !== "OK") {
+      throw new Error(
+        data?.playabilityStatus?.reason || "This video cannot be accessed.",
+      );
+    }
   }
 
   const details = data?.videoDetails || {};
